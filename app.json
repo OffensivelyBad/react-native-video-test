@@ -1,0 +1,11 @@
+{
+  "expo": {
+    "name": "react-native-video-test",
+    "slug": "react-native-video-test",
+    "version": "1.0.0",
+    "assetBundlePatterns": [
+      "**/*"
+    ]
+  },
+  "name": "react-native-video-test"
+}
