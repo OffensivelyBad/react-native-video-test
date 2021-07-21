@@ -16,14 +16,15 @@ const Main = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <Text>Derp up App.js to start working on your app!</Text>
-      <IdleVideo
-        startDelay={5}
-        getVideoURLs={getVideoURLs}
-      />
-      <View style={styles.overlay} />
-    </View>
+    <IdleVideo
+      startDelaySeconds={2}
+      getVideoURLs={getVideoURLs}
+    >
+      <View style={styles.container}>
+        <Text>Derp up App.js to start working on your app!</Text>
+        <View style={styles.overlay} />
+      </View>
+    </IdleVideo>
   );
 };
 
@@ -32,7 +33,7 @@ export default Main;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: 'white',
     alignItems: 'center',
     justifyContent: 'center',
   },

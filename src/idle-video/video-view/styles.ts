@@ -3,6 +3,7 @@ const { width, height } = Dimensions.get("window");
 
 const styles = StyleSheet.create({
   video: {
+    backgroundColor: "black",
     height: height,
     width: width
   }

@@ -6,14 +6,38 @@ import styles from './styles';
 import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
 
 type Props = {
-  startDelay?: number;
+  children: React.ReactNode;
+  startDelaySeconds?: number;
   getVideoURLs?: () => Promise<string[]>;
 }
 
 const IdleVideo = (props: Props) => {
   const [videoURLs, setVideoURLs] = React.useState<string[]>([]);
   const [videoIndex, setVideoIndex] = React.useState(0);
-  const { startDelay = 0, getVideoURLs } = props;
+  const [showingVideo, setShowingVideo] = React.useState(false);
+  const [timerSeconds, setTimerSeconds] = React.useState(0);
+  const timerTick = React.useRef<() => void>();
+  const { children, startDelaySeconds = 0, getVideoURLs } = props;
+
+  const tick = React.useCallback(() => {
+    setTimerSeconds(seconds => seconds + 1);
+
+    if (timerSeconds >= startDelaySeconds) {
+      setShowingVideo(true);
+    } else {
+      setShowingVideo(false);
+    }
+  }, [timerSeconds, startDelaySeconds, setShowingVideo]);
+
+  if (startDelaySeconds) {
+    timerTick.current = tick;
+  }
+
+  React.useEffect(() => {
+    if (startDelaySeconds === 0) {
+      setShowingVideo(true);
+    }
+  }, []);
 
   React.useEffect(() => {
     if (getVideoURLs) {
@@ -26,6 +50,15 @@ const IdleVideo = (props: Props) => {
     }
   }, []);
 
+  React.useEffect(() => {
+    if (startDelaySeconds === 0 || showingVideo) {
+      return;
+    }
+    const id = setInterval(() => timerTick.current && timerTick.current(), 1000);
+    return () => clearInterval(id);
+  }, [startDelaySeconds, showingVideo]);
+
+
   const onVideoEnd = React.useCallback(() => {
     console.log('video ended');
     if (videoURLs.length > 1) {
@@ -35,7 +68,8 @@ const IdleVideo = (props: Props) => {
   }, [videoURLs, videoIndex, setVideoIndex]);
 
   const onTouch = () => {
-    console.log('video touched');
+    setShowingVideo(false);
+    setTimerSeconds(0);
   }
 
   const onBuffer = function () {
@@ -48,21 +82,28 @@ const IdleVideo = (props: Props) => {
 
   const currentURL = videoURLs.length > videoIndex ? videoURLs[videoIndex] : "";
 
+  const renderChildren = () => {
+    if (showingVideo && currentURL.length) {
+      return (
+        <VideoView
+          videoURL={currentURL}
+          onBuffer={onBuffer}
+          onEnd={onVideoEnd}
+          onError={onError}
+          repeat={videoURLs.length === 1}
+        />
+      );
+    }
+    return children;
+  }
+
   return (
     <>
-      {currentURL.length > 0 ? (
-        <View style={styles.container}>
-          <TouchableWithoutFeedback onPress={onTouch}>
-            <VideoView
-              videoURL={currentURL}
-              onBuffer={onBuffer}
-              onEnd={onVideoEnd}
-              onError={onError}
-              repeat={videoURLs.length === 1}
-            />
-          </TouchableWithoutFeedback>
-        </View>
-      ) : null}
+      <View style={styles.container}>
+        <TouchableWithoutFeedback onPress={onTouch}>
+          {renderChildren()}
+        </TouchableWithoutFeedback>
+      </View>
     </>
   );
 };
