@@ -1,9 +1,8 @@
 import * as React from 'react';
-import { View } from 'react-native';
+import { TouchableOpacity } from 'react-native';
 import convertToProxyURL from 'react-native-video-cache';
 import VideoView from './video-view';
 import styles from './styles';
-import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
 
 type Props = {
   children: React.ReactNode;
@@ -98,13 +97,9 @@ const IdleVideo = (props: Props) => {
   }
 
   return (
-    <>
-      <View style={styles.container}>
-        <TouchableWithoutFeedback onPress={onTouch}>
-          {renderChildren()}
-        </TouchableWithoutFeedback>
-      </View>
-    </>
+    <TouchableOpacity style={styles.container} activeOpacity={1} onPress={onTouch}>
+      {renderChildren()}
+    </TouchableOpacity>
   );
 };
 
