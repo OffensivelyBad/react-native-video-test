@@ -1,22 +1,20 @@
 import * as React from 'react';
 import { TouchableOpacity } from 'react-native';
-import convertToProxyURL from 'react-native-video-cache';
 import VideoView from './video-view';
 import styles from './styles';
 
 type Props = {
   children: React.ReactNode;
   startDelaySeconds?: number;
-  getVideoURLs?: () => Promise<string[]>;
+  videoURLs: string[];
 }
 
 const IdleVideo = (props: Props) => {
-  const [videoURLs, setVideoURLs] = React.useState<string[]>([]);
   const [videoIndex, setVideoIndex] = React.useState(0);
   const [showingVideo, setShowingVideo] = React.useState(false);
   const [timerSeconds, setTimerSeconds] = React.useState(0);
   const timerTick = React.useRef<() => void>();
-  const { children, startDelaySeconds = 0, getVideoURLs } = props;
+  const { children, startDelaySeconds = 0, videoURLs } = props;
 
   const tick = React.useCallback(() => {
     setTimerSeconds(seconds => seconds + 1);
@@ -39,17 +37,6 @@ const IdleVideo = (props: Props) => {
   }, []);
 
   React.useEffect(() => {
-    if (getVideoURLs) {
-      const getURLs = async () => {
-        const urls = await getVideoURLs();
-        const proxyURLs = urls.map(url => convertToProxyURL(url));
-        setVideoURLs(proxyURLs);
-      };
-      getURLs();
-    }
-  }, []);
-
-  React.useEffect(() => {
     if (startDelaySeconds === 0 || showingVideo) {
       return;
     }
@@ -60,7 +47,7 @@ const IdleVideo = (props: Props) => {
 
   const onVideoEnd = React.useCallback(() => {
     console.log('video ended');
-    if (videoURLs.length > 1) {
+    if (videoURLs.length) {
       const newVideoIndex = videoIndex >= videoURLs.length ? 0 : videoIndex + 1;
       setVideoIndex(newVideoIndex);
     }
@@ -77,6 +64,7 @@ const IdleVideo = (props: Props) => {
 
   const onError = function (error: string) {
     console.log(error);
+    onVideoEnd();
   }
 
   const currentURL = videoURLs.length > videoIndex ? videoURLs[videoIndex] : "";
