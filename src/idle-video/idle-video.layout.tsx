@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { TouchableOpacity } from 'react-native';
+import { TouchableOpacity, View } from 'react-native';
 import VideoView from './video-view';
 import styles from './styles';
 
@@ -15,9 +15,10 @@ const IdleVideo = (props: Props) => {
   const [timerSeconds, setTimerSeconds] = React.useState(0);
   const timerTick = React.useRef<() => void>();
   const { children, startDelaySeconds = 0, videoURLs } = props;
+  const [currentURL, setCurrentURL] = React.useState<string>('');
 
   const tick = React.useCallback(() => {
-    setTimerSeconds(seconds => seconds + 1);
+    setTimerSeconds((seconds) => seconds + 1);
 
     if (timerSeconds >= startDelaySeconds) {
       setShowingVideo(true);
@@ -34,19 +35,21 @@ const IdleVideo = (props: Props) => {
     if (startDelaySeconds === 0) {
       setShowingVideo(true);
     }
-  }, []);
+  }, [startDelaySeconds]);
 
   React.useEffect(() => {
     if (startDelaySeconds === 0 || showingVideo) {
       return;
     }
-    const id = setInterval(() => timerTick.current && timerTick.current(), 1000);
+    const id = setInterval(
+      () => timerTick.current && timerTick.current(),
+      1000,
+    );
+    // eslint-disable-next-line consistent-return
     return () => clearInterval(id);
   }, [startDelaySeconds, showingVideo]);
 
-
   const onVideoEnd = React.useCallback(() => {
-    console.log('video ended');
     if (videoURLs.length) {
       const newVideoIndex = videoIndex >= videoURLs.length ? 0 : videoIndex + 1;
       setVideoIndex(newVideoIndex);
@@ -56,37 +59,34 @@ const IdleVideo = (props: Props) => {
   const onTouch = () => {
     setShowingVideo(false);
     setTimerSeconds(0);
-  }
-
-  const onBuffer = function () {
-    console.log('Buffering...');
   };
 
-  const onError = function (error: string) {
-    console.log(error);
+  const onError = () => {
     onVideoEnd();
-  }
+  };
 
-  const currentURL = videoURLs.length > videoIndex ? videoURLs[videoIndex] : "";
-
-  const renderChildren = () => {
-    if (showingVideo && currentURL.length) {
-      return (
-        <VideoView
-          videoURL={currentURL}
-          onBuffer={onBuffer}
-          onEnd={onVideoEnd}
-          onError={onError}
-          repeat={videoURLs.length === 1}
-        />
-      );
-    }
-    return children;
-  }
+  React.useEffect(() => {
+    const nextURL = videoURLs.length > videoIndex ? videoURLs[videoIndex] : '';
+    setCurrentURL(nextURL);
+  }, [videoURLs, videoIndex, setCurrentURL]);
 
   return (
-    <TouchableOpacity style={styles.container} activeOpacity={1} onPress={onTouch}>
-      {renderChildren()}
+    <TouchableOpacity
+      style={styles.container}
+      onPress={onTouch}
+      activeOpacity={1}
+    >
+      {children}
+      {showingVideo && currentURL.length && (
+        <View style={styles.videoContainer}>
+          <VideoView
+            videoURL={currentURL}
+            onEnd={videoURLs.length === 1 ? () => { } : onVideoEnd}
+            onError={onError}
+            repeat={videoURLs.length === 1}
+          />
+        </View>
+      )}
     </TouchableOpacity>
   );
 };

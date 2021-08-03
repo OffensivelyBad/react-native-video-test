@@ -21,32 +21,35 @@ const Main = () => {
     })
   };
 
-  const checkFileExists = async (path: string, filename: string): Promise<boolean> => {
-    return new Promise<boolean>(async (resolve, _reject) => {
-      const result = await RNFS.readDir(path)
-      const exists = result.some(file => file.name === filename);
-      console.log(`this file  already exists: ${exists}`);
-      resolve(exists);
-    })
+  const checkFileExists = async (
+    path: string,
+    filename: string,
+  ): Promise<boolean> => {
+    const result = await RNFS.readDir(path);
+    const exists = result.some((file) => file.name === filename);
+    return exists;
   };
 
-  const downloadVideos = async () => {
-    videoURLs.map(async (url) => {
-      const components = url.split("/");
-      const filename = components.length ? components[components.length - 1] : "";
-      const alreadyDownloaded = await checkFileExists(FILE_PATH, filename);
-      const fileLocation = `${FILE_PATH}/${filename}`;
-      if (!alreadyDownloaded) {
-        const response = await RNFS.downloadFile({
-          fromUrl: url,
-          toFile: fileLocation
-        }).promise;
-        console.log(`response from downloading video: ${JSON.stringify(response)}`);
-        setVideoLocations(locations => [...locations, fileLocation]);
-      } else {
-        setVideoLocations(locations => [...locations, fileLocation]);
-      }
-    })
+  const downloadVideos = async (urls: string[]): Promise<string[]> => {
+    const locations = await Promise.all(
+      urls.map(async (url) => {
+        const components = url.split('/');
+        const filename = components.length
+          ? components[components.length - 1]
+          : '';
+        const alreadyDownloaded = await checkFileExists(FILE_PATH, filename);
+        const fileLocation = `${FILE_PATH}/${filename}`;
+        if (!alreadyDownloaded) {
+          await RNFS.downloadFile({
+            fromUrl: url,
+            toFile: fileLocation,
+          }).promise;
+        }
+        return fileLocation;
+      }),
+    );
+
+    return locations;
   };
 
   React.useEffect(() => {
@@ -59,7 +62,7 @@ const Main = () => {
 
   React.useEffect(() => {
     if (DOWNLOAD_VIDEOS) {
-      downloadVideos();
+      downloadVideos(videoURLs);
     }
   }, [videoURLs]);
 
