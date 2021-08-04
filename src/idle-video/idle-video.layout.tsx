@@ -48,7 +48,7 @@ const IdleVideo = (props: Props) => {
     );
     // eslint-disable-next-line consistent-return
     return () => clearInterval(id);
-  }, [startDelaySeconds, showingVideo]);
+  }, [startDelaySeconds, showingVideo, shouldStartVideo]);
 
   const onVideoEnd = React.useCallback(() => {
     if (videoURLs.length) {
