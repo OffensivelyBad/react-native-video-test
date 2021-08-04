@@ -62,7 +62,11 @@ const Main = () => {
 
   React.useEffect(() => {
     if (DOWNLOAD_VIDEOS) {
-      downloadVideos(videoURLs);
+      const download = async () => {
+        const locations = await downloadVideos(videoURLs);
+        setVideoLocations(locations);
+      }
+      download();
     }
   }, [videoURLs]);
 
@@ -70,6 +74,7 @@ const Main = () => {
     <IdleVideo
       startDelaySeconds={2}
       videoURLs={DOWNLOAD_VIDEOS ? videoLocations : videoURLs}
+      shouldStartVideo={false}
     >
       <View style={styles.container}>
         <Text>Derp up App.js to start working on your app!</Text>

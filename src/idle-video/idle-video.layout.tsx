@@ -5,17 +5,18 @@ import styles from './styles';
 
 type Props = {
   children: React.ReactNode;
-  startDelaySeconds?: number;
   videoURLs: string[];
+  shouldStartVideo?: boolean;
+  startDelaySeconds?: number;
 }
 
 const IdleVideo = (props: Props) => {
   const [videoIndex, setVideoIndex] = React.useState(0);
   const [showingVideo, setShowingVideo] = React.useState(false);
   const [timerSeconds, setTimerSeconds] = React.useState(0);
-  const timerTick = React.useRef<() => void>();
-  const { children, startDelaySeconds = 0, videoURLs } = props;
   const [currentURL, setCurrentURL] = React.useState<string>('');
+  const timerTick = React.useRef<() => void>();
+  const { children, startDelaySeconds = 0, videoURLs, shouldStartVideo = true } = props;
 
   const tick = React.useCallback(() => {
     setTimerSeconds((seconds) => seconds + 1);
@@ -38,7 +39,7 @@ const IdleVideo = (props: Props) => {
   }, [startDelaySeconds]);
 
   React.useEffect(() => {
-    if (startDelaySeconds === 0 || showingVideo) {
+    if (startDelaySeconds === 0 || showingVideo || !shouldStartVideo) {
       return;
     }
     const id = setInterval(
@@ -77,7 +78,7 @@ const IdleVideo = (props: Props) => {
       activeOpacity={1}
     >
       {children}
-      {showingVideo && currentURL.length && (
+      {(showingVideo && !!currentURL && !!currentURL.length) ? (
         <View style={styles.videoContainer}>
           <VideoView
             videoURL={currentURL}
@@ -86,7 +87,7 @@ const IdleVideo = (props: Props) => {
             repeat={videoURLs.length === 1}
           />
         </View>
-      )}
+      ) : null}
     </TouchableOpacity>
   );
 };
