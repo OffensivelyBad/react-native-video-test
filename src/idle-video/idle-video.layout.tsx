@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { TouchableOpacity, View } from 'react-native';
+import { TouchableWithoutFeedback, View } from 'react-native';
 import VideoView from './video-view';
 import styles from './styles';
 
@@ -72,7 +72,7 @@ const IdleVideo = (props: Props) => {
   }, [videoURLs, videoIndex, setCurrentURL]);
 
   return (
-    <TouchableOpacity
+    <TouchableWithoutFeedback
       style={styles.container}
       onPress={onTouch}
       activeOpacity={1}
@@ -88,7 +88,7 @@ const IdleVideo = (props: Props) => {
           />
         </View>
       ) : null}
-    </TouchableOpacity>
+    </TouchableWithoutFeedback>
   );
 };
 
